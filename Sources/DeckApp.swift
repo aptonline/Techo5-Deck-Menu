@@ -32,7 +32,9 @@ private final class MenuState: ObservableObject {
     @Published var confirmingKey = false
     @Published var loginStatus = SMAppService.mainApp.status
     @Published var loginError: String?
-    @Published var appUpdatesURL = UserDefaults.standard.string(forKey: "AppUpdatesURL").flatMap { URL(string: $0) }
+    private static let defaultAppUpdatesURL = URL(string: "https://github.com/aptonline/Techo5-Deck-Menu/releases/latest")!
+    @Published var appUpdatesURL = UserDefaults.standard.string(forKey: "AppUpdatesURL")
+        .flatMap { URL(string: $0) } ?? defaultAppUpdatesURL
     @Published var appUpdateError: String?
 }
 
@@ -182,16 +184,8 @@ struct DeckMenu: View {
                         Button("Approve in Login Items") { SMAppService.openSystemSettingsLoginItems() }
                     }
                     Divider()
-                    Button("Check for App Updates…") {
-                        if let url = menu.appUpdatesURL {
-                            openAppUpdates(url)
-                        } else {
-                            editAppUpdatesURL(openAfterSaving: true)
-                        }
-                    }
-                    if menu.appUpdatesURL != nil {
-                        Button("Change App Updates URL…") { editAppUpdatesURL(openAfterSaving: false) }
-                    }
+                    Button("Check for App Updates…") { openAppUpdates(menu.appUpdatesURL) }
+                    Button("Change App Updates URL…") { editAppUpdatesURL() }
                 }
                 .fixedSize()
                 Menu("Help") {
@@ -229,17 +223,17 @@ struct DeckMenu: View {
         return engine.installed ? "Stopped" : "Engine Not Installed"
     }
 
-    private func editAppUpdatesURL(openAfterSaving: Bool) {
+    private func editAppUpdatesURL() {
         menu.appUpdateError = nil
         let alert = NSAlert()
         alert.messageText = "App Updates URL"
         alert.informativeText = "Enter the HTTPS address where you download new versions of the TECHO5 Deck menu bar app."
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 320, height: 24))
         field.placeholderString = "https://"
-        field.stringValue = menu.appUpdatesURL?.absoluteString ?? ""
+        field.stringValue = menu.appUpdatesURL.absoluteString
         alert.accessoryView = field
         alert.window.initialFirstResponder = field
-        alert.addButton(withTitle: openAfterSaving ? "Save and Open" : "Save")
+        alert.addButton(withTitle: "Save")
         alert.addButton(withTitle: "Cancel")
 
         while alert.runModal() == .alertFirstButtonReturn {
@@ -253,7 +247,6 @@ struct DeckMenu: View {
             // Store a string so UserDefaults preserves the full web URL.
             UserDefaults.standard.set(url.absoluteString, forKey: "AppUpdatesURL")
             menu.appUpdatesURL = url
-            if openAfterSaving { openAppUpdates(url) }
             return
         }
     }
