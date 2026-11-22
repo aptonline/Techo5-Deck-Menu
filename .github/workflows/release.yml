@@ -3,11 +3,12 @@ name: Release TECHO5 Deck
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]*'
+      - '[0-9]*'
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing release tag (for example, v0.1.4)
+        description: Exact tag on GitHub (for example, 0.1.4)
         required: true
         type: string
 
@@ -26,11 +27,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "$REQUESTED_RELEASE_TAG" =~ ^[[:space:]]*v?([0-9]+\.[0-9]+\.[0-9]+)[[:space:]]*$ ]]; then
+          if [[ ! "$REQUESTED_RELEASE_TAG" =~ ^[[:space:]]*(v?[0-9]+\.[0-9]+\.[0-9]+)[[:space:]]*$ ]]; then
             echo "::error::Enter the tagged app version, for example 0.1.4 or v0.1.4."
             exit 1
           fi
-          tag="v${BASH_REMATCH[1]}"
+          tag="${BASH_REMATCH[1]}"
           printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
           printf 'RELEASE_TAG=%s\n' "$tag" >> "$GITHUB_ENV"
 
@@ -61,8 +62,8 @@ jobs:
 
           app="$build_dir/Build/Products/Release/TECHO5 Deck.app"
           version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")"
-          if [[ "$RELEASE_TAG" != "v$version" ]]; then
-            echo "::error::Tag $RELEASE_TAG must match app version v$version in App.xcconfig."
+          if [[ "${RELEASE_TAG#v}" != "$version" ]]; then
+            echo "::error::Tag $RELEASE_TAG must match app version $version in App.xcconfig."
             exit 1
           fi
 
