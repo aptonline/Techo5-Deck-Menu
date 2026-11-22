@@ -20,7 +20,7 @@
         };
         A00000000000000000000002 = {
             isa = PBXGroup;
-            children = (A00000000000000000000005, A00000000000000000000012, A00000000000000000000003);
+            children = (A00000000000000000000005, A00000000000000000000012, A00000000000000000000013, A00000000000000000000003);
             sourceTree = "<group>";
         };
         A00000000000000000000003 = {
@@ -32,7 +32,7 @@
         A00000000000000000000004 = {
             isa = PBXNativeTarget;
             buildConfigurationList = A0000000000000000000000B;
-            buildPhases = (A00000000000000000000007);
+            buildPhases = (A00000000000000000000007, A00000000000000000000015);
             buildRules = ();
             dependencies = ();
             name = "TECHO5 Deck";
@@ -111,6 +111,19 @@
             lastKnownFileType = text.xcconfig;
             path = App.xcconfig;
             sourceTree = "<group>";
+        };
+        A00000000000000000000013 = {
+            isa = PBXFileReference;
+            lastKnownFileType = folder.assetcatalog;
+            path = Assets.xcassets;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000014 = { isa = PBXBuildFile; fileRef = A00000000000000000000013; };
+        A00000000000000000000015 = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (A00000000000000000000014);
+            runOnlyForDeploymentPostprocessing = 0;
         };
     };
     rootObject = A00000000000000000000001;

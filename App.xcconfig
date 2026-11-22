@@ -1,7 +1,7 @@
 PRODUCT_NAME = TECHO5 Deck
 PRODUCT_BUNDLE_IDENTIFIER = local.techo5.deck.menubar
-MARKETING_VERSION = 0.1.3
-CURRENT_PROJECT_VERSION = 4
+MARKETING_VERSION = 0.1.4
+CURRENT_PROJECT_VERSION = 5
 SWIFT_VERSION = 5.0
 CODE_SIGN_IDENTITY = -
 CODE_SIGN_STYLE = Manual
@@ -12,3 +12,4 @@ INFOPLIST_KEY_NSAppleEventsUsageDescription = TECHO5 Deck uses System Events to 
 INFOPLIST_KEY_NSLocalNetworkUsageDescription = TECHO5 Deck receives commands from your paired Echo Show on your local network.
 CODE_SIGN_ENTITLEMENTS = Deck.entitlements
 ALWAYS_SEARCH_USER_PATHS = NO
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon
