@@ -12,7 +12,7 @@ on:
         type: string
 
 env:
-  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+  REQUESTED_RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 permissions:
   contents: write
@@ -21,17 +21,22 @@ jobs:
   release:
     runs-on: macos-15
     steps:
-      - name: Validate release tag
+      - name: Resolve release tag
+        id: release_tag
         shell: bash
         run: |
-          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Enter a version tag such as v0.1.4."
+          set -euo pipefail
+          if [[ ! "$REQUESTED_RELEASE_TAG" =~ ^[[:space:]]*v?([0-9]+\.[0-9]+\.[0-9]+)[[:space:]]*$ ]]; then
+            echo "::error::Enter the tagged app version, for example 0.1.4 or v0.1.4."
             exit 1
           fi
+          tag="v${BASH_REMATCH[1]}"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+          printf 'RELEASE_TAG=%s\n' "$tag" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v7
         with:
-          ref: refs/tags/${{ env.RELEASE_TAG }}
+          ref: refs/tags/${{ steps.release_tag.outputs.tag }}
           persist-credentials: false
 
       - name: Build and verify universal app
