@@ -32,10 +32,8 @@ private final class MenuState: ObservableObject {
     @Published var confirmingKey = false
     @Published var loginStatus = SMAppService.mainApp.status
     @Published var loginError: String?
-    private static let defaultAppUpdatesURL = URL(string: "https://github.com/aptonline/Techo5-Deck-Menu/releases/latest")!
-    @Published var appUpdatesURL = UserDefaults.standard.string(forKey: "AppUpdatesURL")
-        .flatMap { URL(string: $0) } ?? defaultAppUpdatesURL
-    @Published var appUpdateError: String?
+    @Published var checkingAppUpdates = false
+    @Published var appUpdateStatus: String?
 }
 
 struct DeckMenu: View {
@@ -184,8 +182,10 @@ struct DeckMenu: View {
                         Button("Approve in Login Items") { SMAppService.openSystemSettingsLoginItems() }
                     }
                     Divider()
-                    Button("Check for App Updates…") { openAppUpdates(menu.appUpdatesURL) }
-                    Button("Change App Updates URL…") { editAppUpdatesURL() }
+                    Button("Check for App Updates…") {
+                        Task { await checkForAppUpdates() }
+                    }
+                    .disabled(menu.checkingAppUpdates)
                 }
                 .fixedSize()
                 Menu("Help") {
@@ -212,8 +212,8 @@ struct DeckMenu: View {
             if let loginError = menu.loginError {
                 Text(loginError).font(.caption).foregroundStyle(.secondary)
             }
-            if let error = menu.appUpdateError {
-                Text(error).font(.caption).foregroundStyle(.secondary)
+            if let status = menu.appUpdateStatus {
+                Text(status).font(.caption).foregroundStyle(.secondary)
             }
         }
     }
@@ -223,36 +223,31 @@ struct DeckMenu: View {
         return engine.installed ? "Stopped" : "Engine Not Installed"
     }
 
-    private func editAppUpdatesURL() {
-        menu.appUpdateError = nil
-        let alert = NSAlert()
-        alert.messageText = "App Updates URL"
-        alert.informativeText = "Enter the HTTPS address where you download new versions of the TECHO5 Deck menu bar app."
-        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 320, height: 24))
-        field.placeholderString = "https://"
-        field.stringValue = menu.appUpdatesURL.absoluteString
-        alert.accessoryView = field
-        alert.window.initialFirstResponder = field
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
+    private func checkForAppUpdates() async {
+        guard !menu.checkingAppUpdates else { return }
+        menu.checkingAppUpdates = true
+        menu.appUpdateStatus = "Checking for app updates…"
+        defer { menu.checkingAppUpdates = false }
 
-        while alert.runModal() == .alertFirstButtonReturn {
-            let address = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard let parts = URLComponents(string: address),
-                  parts.scheme?.lowercased() == "https", let host = parts.host, !host.isEmpty,
-                  parts.user == nil, parts.password == nil, let url = parts.url else {
-                alert.informativeText = "Enter a valid HTTPS address for the app’s release page."
-                continue
+        do {
+            guard let installed = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
+                throw EngineError("Couldn’t determine the installed app version.")
             }
-            // Store a string so UserDefaults preserves the full web URL.
-            UserDefaults.standard.set(url.absoluteString, forKey: "AppUpdatesURL")
-            menu.appUpdatesURL = url
-            return
-        }
-    }
 
-    private func openAppUpdates(_ url: URL) {
-        menu.appUpdateError = NSWorkspace.shared.open(url) ? nil : "Couldn’t open the app updates page."
+            let latest = try await AppRelease.latest()
+            guard latest.version != installed else {
+                menu.appUpdateStatus = "TECHO5 Deck \(installed) is up to date."
+                return
+            }
+
+            let download = try await latest.verifiedDownloadURL()
+            guard NSWorkspace.shared.open(download) else {
+                throw EngineError("Couldn’t open the app download in your browser.")
+            }
+            menu.appUpdateStatus = "Opened the \(latest.version) download in your browser."
+        } catch {
+            menu.appUpdateStatus = "App update check failed. \(error.localizedDescription)"
+        }
     }
 
     private func changeLogin(_ enabled: Bool) {
@@ -277,5 +272,46 @@ private struct StatusLabelStyle: LabelStyle {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+struct AppRelease {
+    private static let repository = URL(string: "https://github.com/aptonline/Techo5-Deck-Menu")!
+
+    let tag: String
+    var version: String { tag.hasPrefix("v") ? String(tag.dropFirst()) : tag }
+
+    static func latest() async throws -> AppRelease {
+        let url = repository.appending(path: "releases/latest")
+        let response = try await head(url)
+        let tagPrefix = repository.path + "/releases/tag/"
+        guard response.statusCode == 200, let releaseURL = response.url,
+              releaseURL.scheme == "https", releaseURL.host == repository.host,
+              releaseURL.path == tagPrefix + releaseURL.lastPathComponent,
+              releaseURL.lastPathComponent.range(of: #"^v?[0-9]+\.[0-9]+\.[0-9]+$"#, options: .regularExpression) != nil else {
+            throw EngineError("GitHub didn’t return a published app version.")
+        }
+        return AppRelease(tag: releaseURL.lastPathComponent)
+    }
+
+    func verifiedDownloadURL() async throws -> URL {
+        let filename = "TECHO5-Deck-\(version)-macOS-universal.zip"
+        let url = Self.repository.appending(path: "releases/download")
+            .appending(component: tag).appending(component: filename)
+        let response = try await Self.head(url)
+        guard response.statusCode == 200 else {
+            throw EngineError("GitHub didn’t provide the Mac app ZIP for release \(tag) (HTTP \(response.statusCode)).")
+        }
+        return url
+    }
+
+    private static func head(_ url: URL) async throws -> HTTPURLResponse {
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 20)
+        request.httpMethod = "HEAD"
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw EngineError("GitHub returned an invalid response.")
+        }
+        return http
     }
 }

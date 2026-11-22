@@ -15,7 +15,7 @@ The app uses the agent's standard settings directory, `~/Library/Application Sup
 
 ## Menu bar app updates
 
-Choose **Settings → Check for App Updates…** to open the [latest menu bar app release](https://github.com/aptonline/Techo5-Deck-Menu/releases/latest) in your browser. You can change it later under **Settings → Change App Updates URL…**.
+Choose **Settings → Check for App Updates…** to compare your installed version with the latest published GitHub release. If the versions differ, your browser downloads the universal Mac ZIP. Unzip it and replace the app after quitting your running copy.
 
 ## Build in Xcode
 
