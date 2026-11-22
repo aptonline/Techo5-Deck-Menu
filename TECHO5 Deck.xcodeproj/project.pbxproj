@@ -1,0 +1,117 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+        A00000000000000000000001 = {
+            isa = PBXProject;
+            attributes = { LastUpgradeCheck = 2720; };
+            buildConfigurationList = A0000000000000000000000A;
+            compatibilityVersion = "Xcode 14.0";
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (en, Base);
+            mainGroup = A00000000000000000000002;
+            productRefGroup = A00000000000000000000003;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (A00000000000000000000004);
+        };
+        A00000000000000000000002 = {
+            isa = PBXGroup;
+            children = (A00000000000000000000005, A00000000000000000000012, A00000000000000000000003);
+            sourceTree = "<group>";
+        };
+        A00000000000000000000003 = {
+            isa = PBXGroup;
+            children = (A00000000000000000000006);
+            name = Products;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000004 = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = A0000000000000000000000B;
+            buildPhases = (A00000000000000000000007);
+            buildRules = ();
+            dependencies = ();
+            name = "TECHO5 Deck";
+            productName = "TECHO5 Deck";
+            productReference = A00000000000000000000006;
+            productType = "com.apple.product-type.application";
+        };
+        A00000000000000000000005 = {
+            isa = PBXGroup;
+            children = (A00000000000000000000008, A00000000000000000000009);
+            path = Sources;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000006 = {
+            isa = PBXFileReference;
+            explicitFileType = wrapper.application;
+            path = "TECHO5 Deck.app";
+            sourceTree = BUILT_PRODUCTS_DIR;
+        };
+        A00000000000000000000007 = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (A00000000000000000000010, A00000000000000000000011);
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+        A00000000000000000000008 = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = DeckApp.swift;
+            sourceTree = "<group>";
+        };
+        A00000000000000000000009 = {
+            isa = PBXFileReference;
+            lastKnownFileType = sourcecode.swift;
+            path = Engine.swift;
+            sourceTree = "<group>";
+        };
+        A0000000000000000000000A = {
+            isa = XCConfigurationList;
+            buildConfigurations = (A0000000000000000000000C, A0000000000000000000000D);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        A0000000000000000000000B = {
+            isa = XCConfigurationList;
+            buildConfigurations = (A0000000000000000000000E, A0000000000000000000000F);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        A0000000000000000000000C = {
+            isa = XCBuildConfiguration;
+            buildSettings = { MACOSX_DEPLOYMENT_TARGET = 13.0; SDKROOT = macosx; };
+            name = Debug;
+        };
+        A0000000000000000000000D = {
+            isa = XCBuildConfiguration;
+            buildSettings = { MACOSX_DEPLOYMENT_TARGET = 13.0; SDKROOT = macosx; };
+            name = Release;
+        };
+        A0000000000000000000000E = {
+            isa = XCBuildConfiguration;
+            buildSettings = {};
+            baseConfigurationReference = A00000000000000000000012;
+            name = Debug;
+        };
+        A0000000000000000000000F = {
+            isa = XCBuildConfiguration;
+            buildSettings = { ONLY_ACTIVE_ARCH = NO; };
+            baseConfigurationReference = A00000000000000000000012;
+            name = Release;
+        };
+        A00000000000000000000010 = { isa = PBXBuildFile; fileRef = A00000000000000000000008; };
+        A00000000000000000000011 = { isa = PBXBuildFile; fileRef = A00000000000000000000009; };
+        A00000000000000000000012 = {
+            isa = PBXFileReference;
+            lastKnownFileType = text.xcconfig;
+            path = App.xcconfig;
+            sourceTree = "<group>";
+        };
+    };
+    rootObject = A00000000000000000000001;
+}

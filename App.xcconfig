@@ -1,0 +1,14 @@
+PRODUCT_NAME = TECHO5 Deck
+PRODUCT_BUNDLE_IDENTIFIER = local.techo5.deck.menubar
+MARKETING_VERSION = 0.1.2
+CURRENT_PROJECT_VERSION = 3
+SWIFT_VERSION = 5.0
+CODE_SIGN_IDENTITY = -
+CODE_SIGN_STYLE = Manual
+ENABLE_HARDENED_RUNTIME = YES
+GENERATE_INFOPLIST_FILE = YES
+INFOPLIST_KEY_LSUIElement = YES
+INFOPLIST_KEY_NSAppleEventsUsageDescription = TECHO5 Deck uses System Events to send shortcuts and type text when you press a Deck button.
+INFOPLIST_KEY_NSLocalNetworkUsageDescription = TECHO5 Deck receives commands from your paired Echo Show on your local network.
+CODE_SIGN_ENTITLEMENTS = Deck.entitlements
+ALWAYS_SEARCH_USER_PATHS = NO
