@@ -11,6 +11,7 @@ struct DeckApp: App {
         MenuBarExtra("TECHO5 Deck", systemImage: engine.running ? "square.grid.3x3.fill" : "square.grid.3x3") {
             DeckMenu(engine: engine)
         }
+        // The system popover supplies its material and follows the system appearance.
         .menuBarExtraStyle(.window)
     }
 }
@@ -41,7 +42,7 @@ struct DeckMenu: View {
     @StateObject private var menu = MenuState()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading) {
             header
             Divider()
             pairingSection
@@ -50,7 +51,7 @@ struct DeckMenu: View {
             Divider()
             footer
         }
-        .padding(14)
+        .padding()
         .frame(width: 356)
         .onAppear { menu.loginStatus = SMAppService.mainApp.status }
         .onDisappear { menu.showingKey = false }
@@ -116,7 +117,7 @@ struct DeckMenu: View {
                     .font(.system(.callout, design: .monospaced))
                     .textSelection(.enabled)
             } else if engine.key == nil {
-                Text("Available after the engine starts.")
+                Text("Available after the agent starts.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -127,7 +128,7 @@ struct DeckMenu: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Engine").font(.subheadline.weight(.semibold))
+                    Text("Agent").font(.subheadline.weight(.semibold))
                     if let version = engine.version {
                         Text(version).font(.caption).foregroundStyle(.secondary)
                     }
@@ -138,22 +139,22 @@ struct DeckMenu: View {
                         Task { if engine.running { await engine.stop() } else { await engine.start() } }
                     }
                     .disabled(engine.busy != nil)
-                    .accessibilityLabel(engine.running ? "Stop Engine" : "Start Engine")
+                    .accessibilityLabel(engine.running ? "Stop Agent" : "Start Agent")
                     Button("Restart") { Task { await engine.restart() } }
                         .disabled(engine.busy != nil || !engine.running)
-                        .accessibilityLabel("Restart Engine")
+                        .accessibilityLabel("Restart Agent")
                     Menu {
-                        Button("Check for Engine Updates") { Task { await engine.update() } }
+                        Button("Check for Agent Updates") { Task { await engine.update() } }
                             .disabled(engine.busy != nil)
-                        Button("Show Engine Folder") { NSWorkspace.shared.open(engine.directory) }
+                        Button("Show Agent Folder") { NSWorkspace.shared.open(engine.directory) }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .accessibilityLabel("Engine Options")
+                            .accessibilityLabel("Agent Options")
                     }
                     .fixedSize()
-                    .help("Engine Options")
+                    .help("Agent Options")
                 } else {
-                    Button("Download Engine") { Task { await engine.update() } }
+                    Button("Download Agent") { Task { await engine.update() } }
                         .disabled(engine.busy != nil)
                 }
             }
@@ -220,7 +221,7 @@ struct DeckMenu: View {
 
     private var status: String {
         if engine.running { return "Running" }
-        return engine.installed ? "Stopped" : "Engine Not Installed"
+        return engine.installed ? "Stopped" : "Agent Not Installed"
     }
 
     private func checkForAppUpdates() async {

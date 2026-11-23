@@ -131,7 +131,7 @@ final class Engine: ObservableObject {
         guard !bootstrapped else { return }
         bootstrapped = true
         if files.fileExists(atPath: backup.path) {
-            await perform("Recovering engine…") {
+            await perform("Recovering agent…") {
                 try self.replace(self.backup, withDestination: self.executable)
                 self.refresh()
                 try await self.launch()
@@ -143,11 +143,11 @@ final class Engine: ObservableObject {
         }
     }
 
-    func start() async { await perform("Starting engine…") { try await self.launch() } }
-    func stop() async { await perform("Stopping engine…") { try await self.stopProcess() } }
+    func start() async { await perform("Starting agent…") { try await self.launch() } }
+    func stop() async { await perform("Stopping agent…") { try await self.stopProcess() } }
 
     func restart() async {
-        await perform("Restarting engine…") {
+        await perform("Restarting agent…") {
             try await self.stopProcess()
             try await self.launch()
         }
@@ -162,22 +162,22 @@ final class Engine: ObservableObject {
     }
 
     func update() async {
-        await perform("Checking GitHub for engine updates…") {
+        await perform("Checking GitHub for agent updates…") {
             let release = try await Release.latest()
             let asset = try release.engineAsset()
             let expectedDigest = asset.digest
             if self.installed, try Release.digest(self.executable) == expectedDigest {
                 try self.saveReceipt(release.tag_name, digest: expectedDigest)
-                self.message = "Engine \(release.tag_name) is up to date."
+                self.message = "Agent \(release.tag_name) is up to date."
                 return
             }
 
-            self.busy = "Downloading engine \(release.tag_name)…"
+            self.busy = "Downloading agent \(release.tag_name)…"
             let (download, response) = try await URLSession.shared.download(from: asset.browser_download_url)
             try Release.check(response)
             defer { try? self.files.removeItem(at: download) }
             let digest = try Release.digest(download)
-            guard digest == expectedDigest else { throw EngineError("The engine download failed its SHA-256 check.") }
+            guard digest == expectedDigest else { throw EngineError("The agent download failed its SHA-256 check.") }
 
             try self.files.createDirectory(at: self.directory, withIntermediateDirectories: true)
             let staged = self.directory.appending(path: UUID().uuidString)
@@ -185,9 +185,9 @@ final class Engine: ObservableObject {
             try self.files.copyItem(at: download, to: staged)
             try self.files.setAttributes([.posixPermissions: 0o700], ofItemAtPath: staged.path)
 
-            self.busy = "Installing engine \(release.tag_name)…"
+            self.busy = "Installing agent \(release.tag_name)…"
             try await self.install(staged, version: release.tag_name, digest: digest)
-            self.message = "Engine \(release.tag_name) installed."
+            self.message = "Agent \(release.tag_name) installed."
         }
     }
 
@@ -195,7 +195,7 @@ final class Engine: ObservableObject {
         let wasRunning = running
         let hadEngine = installed
         guard !files.fileExists(atPath: backup.path) else {
-            throw EngineError("A previous engine is awaiting recovery. Quit and reopen TECHO5 Deck.")
+            throw EngineError("A previous agent is awaiting recovery. Quit and reopen TECHO5 Deck.")
         }
         let oldReceipt = try? Data(contentsOf: receipt)
         try await stopProcess()
@@ -233,7 +233,7 @@ final class Engine: ObservableObject {
             } catch {
                 throw EngineError("Update failed. Recovery also failed: \(error.localizedDescription)")
             }
-            throw EngineError("Engine installation failed. \(updateError.localizedDescription)")
+            throw EngineError("Agent installation failed. \(updateError.localizedDescription)")
         }
     }
 
@@ -261,7 +261,7 @@ final class Engine: ObservableObject {
     private func launch(newKey: Bool = false) async throws {
         guard process == nil else { return }
         guard files.isExecutableFile(atPath: executable.path) else {
-            throw EngineError("Install the engine before starting it.")
+            throw EngineError("Install the agent before starting it.")
         }
         let child = Process()
         child.executableURL = executable
@@ -275,7 +275,7 @@ final class Engine: ObservableObject {
                 self.process = nil
                 self.running = false
                 if self.busy == nil {
-                    self.message = "Engine exited (\(ended.terminationStatus))."
+                    self.message = "Agent exited (\(ended.terminationStatus))."
                 }
             }
         }
@@ -283,7 +283,7 @@ final class Engine: ObservableObject {
         process = child
         try await Task.sleep(for: .seconds(2))
         guard child.isRunning else {
-            throw EngineError("The engine exited during startup. Check whether another Deck agent is using port \(port).")
+            throw EngineError("The agent exited during startup. Check whether another Deck agent is using port \(port).")
         }
         running = true
         refreshKey()
@@ -300,7 +300,7 @@ final class Engine: ObservableObject {
             }
             try await Task.sleep(for: .milliseconds(100))
         }
-        throw EngineError("The engine did not stop. Its files were left in place.")
+        throw EngineError("The agent did not stop. Its files were left in place.")
     }
 
     func quit() {
